@@ -1,0 +1,87 @@
+import {
+	CloudFrontRequestEvent, CloudFrontRequestHandler, CloudFrontRequestResult, CloudFrontResponseEvent,
+	CloudFrontResponseHandler, CloudFrontResponseResult, Context, Handler
+} from 'aws-lambda';
+import globToRegExp from 'glob-to-regexp';
+
+import { EventType } from './types';
+import { CallbackPromise, loadModule } from './utils';
+
+
+export type AsyncCloudFrontRequestHandler = (event: CloudFrontRequestEvent, context: Context) => Promise<CloudFrontRequestResult>;
+export type AsyncCloudFrontResponseHandler = (event: CloudFrontResponseEvent, context: Context) => Promise<CloudFrontResponseResult>;
+
+const identityRequestHandler = async (event: CloudFrontRequestEvent) => event.Records[0].cf.request;
+const identityResponseHandler = async (event: CloudFrontResponseEvent) => event.Records[0].cf.response;
+
+export class FunctionSet {
+	public readonly regex: RegExp;
+
+	viewerRequest: Annotated<AsyncCloudFrontRequestHandler> = identityRequestHandler;
+	originRequest: Annotated<AsyncCloudFrontRequestHandler> = identityRequestHandler;
+	originResponse: Annotated<AsyncCloudFrontResponseHandler> = identityResponseHandler;
+	viewerResponse: Annotated<AsyncCloudFrontResponseHandler> = identityResponseHandler;
+
+	constructor(public pattern: string, private log: (message: string) => void) {
+		this.regex = globToRegExp(pattern);
+	}
+
+	async setHandler(event: EventType, path: string) {
+		switch (event) {
+			case 'viewer-request': {
+				this.viewerRequest = await this.getRequestHandler(path);
+				return;
+			}
+			case 'viewer-response': {
+				this.viewerResponse = await this.getResponseHandler(path);
+				return;
+			}
+			case 'origin-request': {
+				this.originRequest = await this.getRequestHandler(path);
+				return;
+			}
+			case 'origin-response': {
+				this.originResponse = await this.getResponseHandler(path);
+				return;
+			}
+		}
+	}
+
+	async getRequestHandler(path: string): Promise<AsyncCloudFrontRequestHandler> {
+		const fn = await loadModule(path);
+
+		const handler = async (event: CloudFrontRequestEvent, context: Context) => {
+			const promise = new CallbackPromise();
+			const result = fn(event, context, promise.callback) as CloudFrontRequestResult;
+
+			if (result instanceof Promise) {
+				return result;
+			} else {
+				return promise;
+			}
+		};
+
+		handler.path = path;
+
+		return handler;
+	}
+
+	async getResponseHandler(path: string): Promise<AsyncCloudFrontResponseHandler> {
+		const fn = await loadModule(path);
+
+		const handler = async (event: CloudFrontResponseEvent, context: Context) => {
+			const deferred = new CallbackPromise();
+			const result = fn(event, context, deferred.callback) as CloudFrontResponseResult;
+
+			if (result instanceof Promise) {
+				return result;
+			} else {
+				return deferred;
+			}
+		};
+
+		handler.path = path;
+
+		return handler;
+	}
+}

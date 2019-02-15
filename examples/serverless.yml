@@ -1,0 +1,51 @@
+service:
+  name: edge-lambdas
+
+plugins:
+  - serverless-offline-edge-lambda
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+
+functions:
+  onViewerRequest:
+    handler: src/handlers.onViewerRequest
+    lambdaAtEdge:
+      distribution: 'WebsiteDistribution'
+      eventType: 'viewer-request'
+      pathPattern: '/lambda'
+  onOriginRequest:
+    handler: src/handlers.onViewerRequest
+    lambdaAtEdge:
+      distribution: 'WebsiteDistribution'
+      eventType: 'origin-request'
+      pathPattern: '/lambda'
+  onOriginResponse:
+    handler: src/handlers.onOriginResponse
+    lambdaAtEdge:
+      distribution: 'WebsiteDistribution'
+      eventType: 'origin-response'
+      pathPattern: '/lambda'
+  onViewerResponse:
+    handler: src/handlers.onViewerResponse
+    lambdaAtEdge:
+      distribution: 'WebsiteDistribution'
+      eventType: 'viewer-response'
+      pathPattern: '/lambda'
+
+resources:
+  Resources:
+    WebsiteBucket:
+      Type: 'AWS::S3::Bucket'
+      Properties:
+        BucketName: ${env:BUCKET}
+        AccessControl: 'PublicRead'
+    WebsiteDistribution:
+      Type: 'AWS::CloudFront::Distribution'
+      Properties:
+        DistributionConfig:
+
+custom:
+  offlineEdgeLambda:
+    path: '.build'

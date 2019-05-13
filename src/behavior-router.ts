@@ -4,7 +4,6 @@ import { isBoom } from 'boom';
 import * as Boom from 'boom';
 import connect, { HandleFunction } from 'connect';
 import cookieParser from 'cookie-parser';
-import flatCache from 'flat-cache';
 import * as fs from 'fs-extra';
 import { createServer, IncomingMessage, ServerResponse } from 'http';
 import { NOT_FOUND, OK } from 'http-status-codes';
@@ -12,19 +11,24 @@ import * as os from 'os';
 import { join, resolve } from 'path';
 import { URL } from 'url';
 
-import { CacheId } from './constants';
 import { FunctionSet } from './function-set';
-import { asyncMiddleware } from './middlewares';
-import { CloudFrontLifecycle, OriginService } from './services';
+import { asyncMiddleware, cloudfrontPost } from './middlewares';
+import { CloudFrontLifecycle, Origin, CacheService } from './services';
 import { ServerlessInstance, ServerlessOptions } from './types';
 import {
-	buildConfig, buildContext, CloudFrontHeadersHelper, ConfigBuilder, convertToCloudFrontEvent, IncomingMessageWithBodyAndCookies
+	buildConfig, buildContext, CloudFrontHeadersHelper, ConfigBuilder,
+	convertToCloudFrontEvent, IncomingMessageWithBodyAndCookies
 } from './utils';
 
 
+interface OriginMapping {
+	pathPattern: string;
+	target: string;
+	default?: boolean;
+}
+
 export class BehaviorRouter {
 	private builder: ConfigBuilder;
-	private cache: FlatCache;
 	private context: Context;
 	private behaviors = new Map<string, FunctionSet>();
 
@@ -32,7 +36,9 @@ export class BehaviorRouter {
 	private fileDir: string;
 	private path: string;
 
-	private originService: OriginService;
+	private origins: Map<string, Origin>;
+
+	private cacheService: CacheService;
 	private log: (message: string) => void;
 
 	constructor(
@@ -51,8 +57,8 @@ export class BehaviorRouter {
 		fs.mkdirpSync(this.cacheDir);
 		fs.mkdirpSync(this.fileDir);
 
-		this.originService = new OriginService(this.cacheDir, this.fileDir);
-		this.cache = flatCache.load(CacheId, this.cacheDir);
+		this.origins = this.configureOrigins();
+		this.cacheService = new CacheService(this.cacheDir);
 	}
 
 	match(req: IncomingMessage): FunctionSet | null {
@@ -68,7 +74,7 @@ export class BehaviorRouter {
 			}
 		}
 
-		return null;
+		return this.behaviors.get('*') || null;
 	}
 
 	async listen(port: number) {
@@ -79,6 +85,7 @@ export class BehaviorRouter {
 
 			const app = connect();
 
+			app.use(cloudfrontPost());
 			app.use(bodyParser());
 			app.use(cookieParser() as HandleFunction);
 			app.use(asyncMiddleware(async (req: IncomingMessageWithBodyAndCookies, res: ServerResponse) => {
@@ -100,7 +107,7 @@ export class BehaviorRouter {
 				}
 
 				try {
-					const lifecycle = new CloudFrontLifecycle(this.serverless, this.options, cfEvent, this.context, this.originService, handler);
+					const lifecycle = new CloudFrontLifecycle(this.serverless, this.options, cfEvent, this.context, this.cacheService, handler);
 					const response = await lifecycle.run(req.url as string);
 
 					if (!response) {
@@ -144,7 +151,17 @@ export class BehaviorRouter {
 	}
 
 	public async purgeStorage() {
-		this.originService.purge();
+		this.cacheService.purge();
+	}
+
+	private configureOrigins(): Map<string, Origin> {
+		const { custom } = this.serverless.service;
+		const mappings: OriginMapping[] = custom.offlineEdgeLambda.originMap || [];
+
+		return mappings.reduce((acc, item) => {
+			acc.set(item.pathPattern, new Origin(item.target));
+			return acc;
+		}, new Map<string, Origin>());
 	}
 
 	private async extractBehaviors() {
@@ -160,12 +177,17 @@ export class BehaviorRouter {
 			const pattern = def.lambdaAtEdge.pathPattern || '*';
 
 			if (!behaviors.has(pattern)) {
-				behaviors.set(pattern, new FunctionSet(pattern, this.log));
+				const origin = this.origins.get(pattern);
+				behaviors.set(pattern, new FunctionSet(pattern, this.log, origin));
 			}
 
 			const fnSet = behaviors.get(pattern) as FunctionSet;
 
 			await fnSet.setHandler(def.lambdaAtEdge.eventType, join(this.path, def.handler));
+		}
+
+		if (!behaviors.has('*')) {
+			behaviors.set('*', new FunctionSet('*', this.log, this.origins.get('*')));
 		}
 	}
 

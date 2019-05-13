@@ -2,10 +2,10 @@
 export interface ServerlessInstance {
 	cli: {
 		log(str: string): void
-	}
+	};
 	config: {
 		servicePath: string
-	}
+	};
 	service: {
 		custom: Record<string, any>;
 		provider: {
@@ -14,8 +14,8 @@ export interface ServerlessInstance {
 		functions: { [key: string]: ServerlessFunction }
 		package: ServerlessPackage
 		getAllFunctions: () => string[]
-	}
-	pluginManager: PluginManager
+	};
+	pluginManager: PluginManager;
 }
 
 export interface ServerlessOptions {
@@ -38,12 +38,12 @@ export interface ServerlessFunction {
 }
 
 export interface ServerlessPackage {
-	include: string[]
-	exclude: string[]
-	artifact?: string
-	individually?: boolean
+	include: string[];
+	exclude: string[];
+	artifact?: string;
+	individually?: boolean;
 }
 
 export interface PluginManager {
-	spawn(command: string): Promise<void>
+	spawn(command: string): Promise<void>;
 }

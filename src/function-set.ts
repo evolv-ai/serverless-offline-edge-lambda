@@ -1,9 +1,9 @@
 import {
-	CloudFrontRequestEvent, CloudFrontRequestHandler, CloudFrontRequestResult, CloudFrontResponseEvent,
-	CloudFrontResponseHandler, CloudFrontResponseResult, Context, Handler
+	CloudFrontRequestEvent, CloudFrontRequestResult, CloudFrontResponseEvent, CloudFrontResponseResult, Context
 } from 'aws-lambda';
 import globToRegExp from 'glob-to-regexp';
 
+import { Origin } from './services';
 import { EventType } from './types';
 import { CallbackPromise, loadModule } from './utils';
 
@@ -22,7 +22,11 @@ export class FunctionSet {
 	originResponse: Annotated<AsyncCloudFrontResponseHandler> = identityResponseHandler;
 	viewerResponse: Annotated<AsyncCloudFrontResponseHandler> = identityResponseHandler;
 
-	constructor(public pattern: string, private log: (message: string) => void) {
+	constructor(
+		public readonly pattern: string,
+		private readonly log: (message: string) => void,
+		public readonly origin: Origin = new Origin()
+	) {
 		this.regex = globToRegExp(pattern);
 	}
 

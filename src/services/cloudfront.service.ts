@@ -5,7 +5,7 @@ import {
 import { NoResult } from '../errors';
 import { FunctionSet } from '../function-set';
 import { combineResult, isResponseResult, toResultResponse } from '../utils';
-import { OriginService } from './origin.service';
+import { CacheService } from './cache.service';
 import { ServerlessInstance, ServerlessOptions } from '../types';
 
 
@@ -18,7 +18,7 @@ export class CloudFrontLifecycle {
 		private options: ServerlessOptions,
 		private event: CloudFrontRequestEvent,
 		private context: Context,
-		private fileService: OriginService,
+		private fileService: CacheService,
 		private fnSet: FunctionSet
 	) {
 		this.log = serverless.cli.log.bind(serverless.cli);
@@ -91,18 +91,23 @@ export class CloudFrontLifecycle {
 		return this.onViewerResponse(result);
 	}
 
+	async onOrigin() {
+		this.log('→ origin');
+		return await this.fnSet.origin.retrieve(this.event);
+	}
+
 	async onOriginRequest() {
 		this.log('→ origin-request');
 
 		const result = await this.fnSet.originRequest(this.event, this.context);
 
 		if (isResponseResult(result)) {
-			return this.onOriginResponse(result);
+			return result;
 		}
 
-		const resultFromFS = await this.fileService.retrieveFromFS(this.event);
+		const resultFromOrigin = await this.onOrigin();
 
-		return this.onOriginResponse(resultFromFS);
+		return this.onOriginResponse(resultFromOrigin);
 	}
 
 	async onOriginResponse(result: CloudFrontResponseResult) {

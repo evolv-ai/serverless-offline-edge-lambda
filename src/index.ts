@@ -1,3 +1,4 @@
+import './polyfills';
 import { BehaviorRouter } from './behavior-router';
 import { ServerlessInstance, ServerlessOptions } from './types';
 
@@ -38,6 +39,9 @@ class OfflineEdgeLambdaPlugin {
 							},
 							fileDir: {
 								required: true
+							},
+							origin: {
+								required: true
 							}
 						}
 					}
@@ -65,7 +69,7 @@ class OfflineEdgeLambdaPlugin {
 
 	async onEnd() {
 		await this.server.purgeStorage();
-		this.log(`CloudFront Offline storage purged`)
+		this.log(`CloudFront Offline storage purged`);
 	}
 }
 

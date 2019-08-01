@@ -40,15 +40,11 @@ resources:
 ```
 
 ```bash
-npx serverless edge start --port=<port>
+npx serverless offline start --port=<port>
 ```
 
 #### Use with `serverless-offline`
-The plugin can be used in conjunction with `serverless-offline`; however, doing so is optional.
-
-```bash
-npx serverless offline start --port=<port for offline> --cloudfrontPort=<port for edge-lambda>
-```
+The plugin should not be used in conjunction with `serverless-offline` because both plugins define the `offline` command.
 
 #### Use with `serverless-plugin-cloudfront-lambda-edge`
 This plugin does not handle packaging and deploying edge lambdas to the cloud. Therefore

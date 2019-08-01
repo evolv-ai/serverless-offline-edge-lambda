@@ -23,6 +23,7 @@ export interface ServerlessOptions {
 	cloudfrontPort: number;
 	disableCache: boolean;
 	fileDir: string;
+	port: number;
 }
 
 export interface EdgeLambdaOptions {

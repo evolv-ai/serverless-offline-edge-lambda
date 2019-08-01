@@ -1,13 +1,13 @@
 {
-	"name": "serverless-offline-edge-lambda-example",
-	"version": "1.0.0",
+  "name": "serverless-offline-edge-lambda-example",
+  "version": "1.0.0",
   "scripts": {
     "prestart": "tsc",
     "start": "serverless edge start"
   },
-	"dependencies": {
+  "dependencies": {
     "fs-extra": "*"
-	},
+  },
   "devDependencies": {
     "@types/aws-lambda": "*",
     "serverless": "*",

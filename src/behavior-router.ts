@@ -8,7 +8,7 @@ import * as fs from 'fs-extra';
 import { createServer, IncomingMessage, ServerResponse } from 'http';
 import { NOT_FOUND, OK } from 'http-status-codes';
 import * as os from 'os';
-import { join, resolve } from 'path';
+import * as path from 'path';
 import { URL } from 'url';
 
 import { FunctionSet } from './function-set';
@@ -50,8 +50,8 @@ export class BehaviorRouter {
 		this.builder = buildConfig(serverless);
 		this.context = buildContext();
 
-		this.cacheDir = resolve(options.cacheDir || join(os.tmpdir(), 'edge-lambda'));
-		this.fileDir = resolve(options.fileDir || join(os.tmpdir(), 'edge-lambda'));
+		this.cacheDir = path.resolve(options.cacheDir || path.join(os.tmpdir(), 'edge-lambda'));
+		this.fileDir = path.resolve(options.fileDir || path.join(os.tmpdir(), 'edge-lambda'));
 		this.path = this.serverless.service.custom.offlineEdgeLambda.path || '';
 
 		fs.mkdirpSync(this.cacheDir);
@@ -134,9 +134,13 @@ export class BehaviorRouter {
 				}
 			}));
 
-			const server = createServer(app);
 
-			return server.listen(port);
+			return new Promise(resolve => {
+				const server = createServer(app);
+
+				server.listen(port);
+				server.on('close', resolve);
+			});
 		} catch (err) {
 			console.error(err);
 			process.exit(1);
@@ -183,7 +187,7 @@ export class BehaviorRouter {
 
 			const fnSet = behaviors.get(pattern) as FunctionSet;
 
-			await fnSet.setHandler(def.lambdaAtEdge.eventType, join(this.path, def.handler));
+			await fnSet.setHandler(def.lambdaAtEdge.eventType, path.join(this.path, def.handler));
 		}
 
 		if (!behaviors.has('*')) {

@@ -17,7 +17,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/SentientTechnologies/serverless-offline-edge-lambda"
+    "url": "https://github.com/evolv-ai/serverless-offline-edge-lambda"
   },
   "files": [
     "dist"

@@ -18,30 +18,37 @@ class OfflineEdgeLambdaPlugin {
 		this.log = serverless.cli.log.bind(serverless.cli);
 
 		this.commands = {
-			edge: {
+			offline: {
 				lifecycleEvents: [
 					'start'
 				],
 				commands: {
 					start: {
 						lifecycleEvents: [
-							'start'
+							'init',
+							'end'
 						],
+						usage: 'Start the offline edge lambda server',
 						options: {
+							port: {
+								usage: 'Specify the port that the server will listen on',
+								default: 8080
+							},
 							cloudfrontPort: {
+								usage: '[Deprecated] Specify the port that the server will listen on. Use --port instead',
 								default: 8080
 							},
 							disableCache: {
+								usage: 'Disables simulated cache',
 								default: false
 							},
 							cacheDir: {
-								required: true
+								usage: 'Specify the directory where cache file will be stored',
+								required: false
 							},
 							fileDir: {
-								required: true
-							},
-							origin: {
-								required: true
+								usage: 'Specify the directory where origin requests will draw from',
+								required: false
 							}
 						}
 					}
@@ -50,18 +57,17 @@ class OfflineEdgeLambdaPlugin {
 		};
 
 		this.hooks = {
-			'edge:start:start': this.onStart.bind(this),
-			'before:offline:start:init': this.onStart.bind(this),
-			'before:offline:start:end': this.onEnd.bind(this),
+			'offline:start:init': this.onStart.bind(this),
+			'offline:start:end': this.onEnd.bind(this)
 		};
 	}
 
 	async onStart() {
 		try {
-			const port = this.options.cloudfrontPort || 8080;
+			const port = this.options.cloudfrontPort || this.options.port || 8080;
 
-			await this.server.listen(port);
 			this.log(`CloudFront Offline listening on port ${port}`);
+			await this.server.listen(port);
 		} catch (err) {
 			console.error(err);
 		}

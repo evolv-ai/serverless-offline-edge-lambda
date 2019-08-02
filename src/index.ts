@@ -35,8 +35,7 @@ class OfflineEdgeLambdaPlugin {
 								default: 8080
 							},
 							cloudfrontPort: {
-								usage: '[Deprecated] Specify the port that the server will listen on. Use --port instead',
-								default: 8080
+								usage: '[Deprecated] Specify the port that the server will listen on. Use --port instead'
 							},
 							disableCache: {
 								usage: 'Disables simulated cache',

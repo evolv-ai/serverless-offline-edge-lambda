@@ -14,6 +14,8 @@ class OfflineEdgeLambdaPlugin {
 		private readonly serverless: ServerlessInstance,
 		private readonly options: ServerlessOptions
 	) {
+		this.prepareCustomSection();
+
 		this.server = new BehaviorRouter(serverless, options);
 		this.log = serverless.cli.log.bind(serverless.cli);
 
@@ -75,6 +77,14 @@ class OfflineEdgeLambdaPlugin {
 	async onEnd() {
 		await this.server.purgeStorage();
 		this.log(`CloudFront Offline storage purged`);
+	}
+
+	private prepareCustomSection() {
+		const { service } = this.serverless;
+		service.custom = service.custom || {};
+
+		const { custom } = this.serverless.service;
+		custom.offlineEdgeLambda = custom.offlineEdgeLambda || {};
 	}
 }
 

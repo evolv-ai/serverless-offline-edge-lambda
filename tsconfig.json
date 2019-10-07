@@ -12,6 +12,7 @@
     "emitDecoratorMetadata": true
 	},
 	"exclude": [
+    "dist",
     "examples",
 		"node_modules"
 	]

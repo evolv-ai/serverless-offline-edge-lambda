@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "prestart": "tsc",
-    "start": "serverless edge start"
+    "start": "serverless offline start"
   },
   "dependencies": {
     "fs-extra": "*"

@@ -10,7 +10,23 @@
     "build": "tsc",
     "prewatch": "rimraf dist",
     "watch": "tsc -w",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"No test specified\"",
+    "commit": "git-cz",
+    "release": "semantic-release --no-ci",
+    "release:dry-run": "semantic-release --no-ci --dry-run",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
+      "pre-commit": "npm test"
+    }
   },
   "contributors": [
     "Matt Strom <matt@mattstrom.com>"
@@ -40,6 +56,13 @@
     "http-status-codes": "^1.3.0"
   },
   "devDependencies": {
+    "@commitlint/cli": "^8.2.0",
+    "@commitlint/config-conventional": "^8.2.0",
+    "@semantic-release/changelog": "^3.0.4",
+    "@semantic-release/commit-analyzer": "^6.3.0",
+    "@semantic-release/git": "^7.0.16",
+    "@semantic-release/github": "^5.5.0",
+    "@semantic-release/release-notes-generator": "^7.3.0",
     "@types/aws-lambda": "^8.10.17",
     "@types/body-parser": "^1.17.0",
     "@types/boom": "^7.2.1",
@@ -47,7 +70,11 @@
     "@types/cookie-parser": "^1.4.1",
     "@types/fs-extra": "^5.0.4",
     "@types/glob-to-regexp": "^0.4.0",
+    "commitizen": "^4.0.3",
+    "cz-conventional-changelog": "^3.0.2",
+    "husky": "^3.0.8",
     "rimraf": "^2.6.3",
+    "semantic-release": "^15.13.24",
     "serverless": "^1.36.3",
     "tslint": "^5.12.1",
     "typescript": "^3.2.4"

@@ -6,7 +6,7 @@ export function buildContext(): Context {
 		functionName: '',
 		functionVersion: '',
 		invokedFunctionArn: '',
-		memoryLimitInMB: 128,
+		memoryLimitInMB: '128',
 		awsRequestId: '',
 		logGroupName: '',
 		logStreamName: '',

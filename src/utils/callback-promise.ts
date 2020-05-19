@@ -38,4 +38,8 @@ export class CallbackPromise<T = any> implements Promise<T> {
 	catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): Promise<T | TResult> {
 		return this.promise.catch(onrejected);
 	}
+
+	finally(onfinally?: (() => void) | undefined | null): Promise<T> {
+		return this.promise.finally(onfinally);
+	}
 }

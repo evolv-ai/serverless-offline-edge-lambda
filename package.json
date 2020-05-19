@@ -11,6 +11,7 @@
     "prewatch": "rimraf dist",
     "watch": "tsc -w",
     "test": "snyk test && echo \"No test specified\"",
+    "lint": "tslint --project tsconfig.json",
     "commit": "git-cz",
     "release": "semantic-release --no-ci",
     "release:dry-run": "semantic-release --no-ci --dry-run",
@@ -25,7 +26,7 @@
   "husky": {
     "hooks": {
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
-      "pre-commit": "npm test"
+      "pre-commit": "npm run lint && npm test"
     }
   },
   "contributors": [

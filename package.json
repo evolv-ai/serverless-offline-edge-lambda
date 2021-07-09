@@ -76,7 +76,7 @@
     "husky": "^3.0.8",
     "rimraf": "^2.6.3",
     "semantic-release": "^15.13.24",
-    "serverless": "^1.36.3",
+    "serverless": "^2.51.2",
     "snyk": "^1.323.0",
     "tslint": "^6.1.2",
     "typescript": "^3.2.4"

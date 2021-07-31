@@ -1,5 +1,5 @@
 import { CloudFrontRequest, CloudFrontRequestEvent, CloudFrontResultResponse } from 'aws-lambda';
-import * as Boom from 'boom';
+import {notFound as notFoundError, internal as internalError} from 'boom';
 import * as fs from 'fs-extra';
 import * as http from 'http';
 import * as https from 'https';
@@ -46,15 +46,20 @@ export class Origin {
 				body: contents
 			};
 		} catch (err) {
-			if (err instanceof Boom.notFound) {
-				return {
-					status: '404'
-				};
-			} else {
-				return {
-					status: '500',
-					statusDescription: err.message
-				};
+			let status = err.isBoom ? err.output.statusCode : 500
+			return {
+				status: status,
+				statusDescription: err.message,
+				headers: {
+					'content-type': [
+						{ key: 'content-type', value: 'application/json' }
+					]
+				},
+				bodyEncoding: 'text',
+				body: JSON.stringify({
+					"code": status,
+					"message": err.message
+				})
 			}
 		}
 	}
@@ -63,18 +68,18 @@ export class Origin {
 		const { uri: key } = request;
 
 		switch (this.type) {
-			case 'file': {
+			case 'file': {				
 				return this.getFileResource(key);
 			}
 			case 'http':
 			case 'https': {
-				return this.getHttpResource(request);
+				return await this.getHttpResource(request);
 			}
 			case 'noop': {
-				throw Boom.notFound();
+				throw notFoundError();
 			}
 			default: {
-				throw Boom.internal('Invalid origin type');
+				throw internalError('Invalid origin type');
 			}
 		}
 	}
@@ -82,6 +87,20 @@ export class Origin {
 	private async getFileResource(key: string): Promise<string> {
 		const uri = parse(key);
 		const fileName = uri.pathname;
+
+		const fileTarget = `${this.baseUrl}/${fileName}`;
+
+		// Check for if file is a file befor fetching it
+		try{
+			await fs.access(fileTarget)
+		} catch {
+			throw notFoundError(`File ${fileTarget} does not exist`);
+		}
+
+		const fileState = await fs.lstat(fileTarget)
+		if(!fileState.isFile()){
+			throw notFoundError(`${fileTarget} is not a file.`);
+		}
 
 		return await fs.readFile(`${this.baseUrl}/${fileName}`, 'utf-8');
 	}

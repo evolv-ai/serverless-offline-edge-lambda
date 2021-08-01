@@ -1,5 +1,4 @@
 import { CloudFrontRequest, CloudFrontRequestEvent, CloudFrontResultResponse } from 'aws-lambda';
-import {notFound as notFoundError, internal as internalError} from 'boom';
 import * as fs from 'fs-extra';
 import * as http from 'http';
 import * as https from 'https';
@@ -8,6 +7,8 @@ import * as path from 'path';
 import { parse } from 'url';
 import { toHttpHeaders } from '../utils';
 import { OutgoingHttpHeaders } from 'http';
+import { InternalServerError, NotFoundError } from '../errors/http';
+import { StatusCodes } from 'http-status-codes';
 
 
 export class Origin {
@@ -36,7 +37,7 @@ export class Origin {
 
 			return {
 				status: '200',
-				statusDescription: '',
+				statusDescription: 'OK',
 				headers: {
 					'content-type': [
 						{ key: 'content-type', value: 'application/json' }
@@ -46,10 +47,12 @@ export class Origin {
 				body: contents
 			};
 		} catch (err) {
-			let status = err.isBoom ? err.output.statusCode : 500
+			// Make sure error gets back to user
+			let status = err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR
+			let reasonPhrase = err.reasonPhrase || "Internal Server Error"
 			return {
 				status: status,
-				statusDescription: err.message,
+				statusDescription: reasonPhrase,
 				headers: {
 					'content-type': [
 						{ key: 'content-type', value: 'application/json' }
@@ -76,10 +79,10 @@ export class Origin {
 				return await this.getHttpResource(request);
 			}
 			case 'noop': {
-				throw notFoundError();
+				throw new NotFoundError("Operation given as 'noop'");
 			}
 			default: {
-				throw internalError('Invalid origin type');
+				throw new InternalServerError("Invalid request type (needs to be 'http', 'https' or 'file')");
 			}
 		}
 	}
@@ -90,16 +93,16 @@ export class Origin {
 
 		const fileTarget = `${this.baseUrl}/${fileName}`;
 
-		// Check for if file is a file befor fetching it
+		// Check for if path given is accessible and is a file before fetching it
 		try{
 			await fs.access(fileTarget)
 		} catch {
-			throw notFoundError(`File ${fileTarget} does not exist`);
+			throw new NotFoundError(`File ${fileTarget} does not exist`);
 		}
 
 		const fileState = await fs.lstat(fileTarget)
 		if(!fileState.isFile()){
-			throw notFoundError(`${fileTarget} is not a file.`);
+			throw new NotFoundError(`${fileTarget} is not a file.`);
 		}
 
 		return await fs.readFile(`${this.baseUrl}/${fileName}`, 'utf-8');

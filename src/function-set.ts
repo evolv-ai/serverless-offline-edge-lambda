@@ -56,6 +56,11 @@ export class FunctionSet {
 
 		const handler = async (event: CloudFrontRequestEvent, context: Context) => {
 			const promise = new CallbackPromise();
+
+			if (typeof fn !== 'function') {
+				throw new Error(`Unable to find request handler under path: ${fn}. Please recheck your serverless.yml / exported handlers!`);
+			}
+
 			const result = fn(event, context, promise.callback) as CloudFrontRequestResult;
 
 			if (result instanceof Promise) {

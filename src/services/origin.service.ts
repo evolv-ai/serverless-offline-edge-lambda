@@ -1,5 +1,4 @@
 import { CloudFrontRequest, CloudFrontRequestEvent, CloudFrontResultResponse } from 'aws-lambda';
-import * as Boom from 'boom';
 import * as fs from 'fs-extra';
 import * as http from 'http';
 import * as https from 'https';
@@ -8,6 +7,8 @@ import * as path from 'path';
 import { parse } from 'url';
 import { toHttpHeaders } from '../utils';
 import { OutgoingHttpHeaders } from 'http';
+import { InternalServerError, NotFoundError } from '../errors/http';
+import { StatusCodes } from 'http-status-codes';
 
 
 export class Origin {
@@ -36,7 +37,7 @@ export class Origin {
 
 			return {
 				status: '200',
-				statusDescription: '',
+				statusDescription: 'OK',
 				headers: {
 					'content-type': [
 						{ key: 'content-type', value: 'application/json' }
@@ -46,16 +47,23 @@ export class Origin {
 				body: contents
 			};
 		} catch (err) {
-			if (err instanceof Boom.notFound) {
-				return {
-					status: '404'
-				};
-			} else {
-				return {
-					status: '500',
-					statusDescription: err.message
-				};
-			}
+			// Make sure error gets back to user
+			const status = err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR;
+			const reasonPhrase = err.reasonPhrase || 'Internal Server Error';
+			return {
+				status: status,
+				statusDescription: reasonPhrase,
+				headers: {
+					'content-type': [
+						{ key: 'content-type', value: 'application/json' }
+					]
+				},
+				bodyEncoding: 'text',
+				body: JSON.stringify({
+					'code': status,
+					'message': err.message
+				})
+			};
 		}
 	}
 
@@ -68,13 +76,13 @@ export class Origin {
 			}
 			case 'http':
 			case 'https': {
-				return this.getHttpResource(request);
+				return await this.getHttpResource(request);
 			}
 			case 'noop': {
-				throw Boom.notFound();
+				throw new NotFoundError('Operation given as \'noop\'');
 			}
 			default: {
-				throw Boom.internal('Invalid origin type');
+				throw new InternalServerError('Invalid request type (needs to be \'http\', \'https\' or \'file\')');
 			}
 		}
 	}
@@ -82,6 +90,20 @@ export class Origin {
 	private async getFileResource(key: string): Promise<string> {
 		const uri = parse(key);
 		const fileName = uri.pathname;
+
+		const fileTarget = `${this.baseUrl}/${fileName}`;
+
+		// Check for if path given is accessible and is a file before fetching it
+		try {
+			await fs.access(fileTarget);
+		} catch {
+			throw new NotFoundError(`File ${fileTarget} does not exist`);
+		}
+
+		const fileState = await fs.lstat(fileTarget);
+		if (!fileState.isFile()) {
+			throw new NotFoundError(`${fileTarget} is not a file.`);
+		}
 
 		return await fs.readFile(`${this.baseUrl}/${fileName}`, 'utf-8');
 	}

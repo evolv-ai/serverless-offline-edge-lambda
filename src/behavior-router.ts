@@ -1,15 +1,14 @@
 import { Context } from 'aws-lambda';
 import bodyParser from 'body-parser';
-import { isBoom } from 'boom';
-import * as Boom from 'boom';
 import connect, { HandleFunction } from 'connect';
 import cookieParser from 'cookie-parser';
 import * as fs from 'fs-extra';
 import { createServer, IncomingMessage, ServerResponse } from 'http';
-import { NOT_FOUND, OK } from 'http-status-codes';
+import { StatusCodes } from 'http-status-codes';
 import * as os from 'os';
 import * as path from 'path';
 import { URL } from 'url';
+import { HttpError, InternalServerError } from './errors/http';
 
 import { FunctionSet } from './function-set';
 import { asyncMiddleware, cloudfrontPost } from './middlewares';
@@ -92,7 +91,7 @@ export class BehaviorRouter {
 				if ((req.method || '').toUpperCase() === 'PURGE') {
 					await this.purgeStorage();
 
-					res.statusCode = OK;
+					res.statusCode = StatusCodes.OK;
 					res.end();
 					return;
 				}
@@ -101,7 +100,7 @@ export class BehaviorRouter {
 				const cfEvent = convertToCloudFrontEvent(req, this.builder('viewer-request'));
 
 				if (!handler) {
-					res.statusCode = NOT_FOUND;
+					res.statusCode = StatusCodes.NOT_FOUND;
 					res.end();
 					return;
 				}
@@ -111,7 +110,7 @@ export class BehaviorRouter {
 					const response = await lifecycle.run(req.url as string);
 
 					if (!response) {
-						throw Boom.internal();
+						throw new InternalServerError('No response set after full request lifecycle');
 					}
 
 					res.statusCode = parseInt(response.status, 10);
@@ -127,10 +126,8 @@ export class BehaviorRouter {
 
 					res.end(response.body);
 				} catch (err) {
-					if (isBoom(err)) {
-						this.handleError(err, res);
-						return;
-					}
+					this.handleError(err, res);
+					return;
 				}
 			}));
 
@@ -147,11 +144,19 @@ export class BehaviorRouter {
 		}
 	}
 
-	public handleError(err: Boom<any>, res: ServerResponse) {
-		res.statusCode = err.output.statusCode;
-		res.statusMessage = err.output.payload.error;
+	// Format errors
+	public handleError(err: HttpError, res: ServerResponse) {
+		res.statusCode = err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR;
 
-		res.end(err.message);
+		const payload = JSON.stringify(err.hasOwnProperty('getResponsePayload') ?
+			err.getResponsePayload() :
+			{
+				code: StatusCodes.INTERNAL_SERVER_ERROR,
+				message: err.stack || err.message
+			}
+		);
+
+		res.end(payload);
 	}
 
 	public async purgeStorage() {

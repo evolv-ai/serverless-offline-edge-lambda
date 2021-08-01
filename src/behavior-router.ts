@@ -110,7 +110,7 @@ export class BehaviorRouter {
 					const response = await lifecycle.run(req.url as string);
 
 					if (!response) {
-						throw new InternalServerError("No response set after full request lifecycle");
+						throw new InternalServerError('No response set after full request lifecycle');
 					}
 
 					res.statusCode = parseInt(response.status, 10);
@@ -146,15 +146,15 @@ export class BehaviorRouter {
 
 	// Format errors
 	public handleError(err: HttpError, res: ServerResponse) {
-		res.statusCode = err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR
-		
+		res.statusCode = err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR;
+
 		const payload = JSON.stringify(err.hasOwnProperty('getResponsePayload') ?
 			err.getResponsePayload() :
 			{
 				code: StatusCodes.INTERNAL_SERVER_ERROR,
-				message: err.stack || err.message 
+				message: err.stack || err.message
 			}
-		)
+		);
 
 		res.end(payload);
 	}

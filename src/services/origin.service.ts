@@ -48,8 +48,8 @@ export class Origin {
 			};
 		} catch (err) {
 			// Make sure error gets back to user
-			let status = err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR
-			let reasonPhrase = err.reasonPhrase || "Internal Server Error"
+			const status = err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR;
+			const reasonPhrase = err.reasonPhrase || 'Internal Server Error';
 			return {
 				status: status,
 				statusDescription: reasonPhrase,
@@ -60,10 +60,10 @@ export class Origin {
 				},
 				bodyEncoding: 'text',
 				body: JSON.stringify({
-					"code": status,
-					"message": err.message
+					'code': status,
+					'message': err.message
 				})
-			}
+			};
 		}
 	}
 
@@ -71,7 +71,7 @@ export class Origin {
 		const { uri: key } = request;
 
 		switch (this.type) {
-			case 'file': {				
+			case 'file': {
 				return this.getFileResource(key);
 			}
 			case 'http':
@@ -79,10 +79,10 @@ export class Origin {
 				return await this.getHttpResource(request);
 			}
 			case 'noop': {
-				throw new NotFoundError("Operation given as 'noop'");
+				throw new NotFoundError('Operation given as \'noop\'');
 			}
 			default: {
-				throw new InternalServerError("Invalid request type (needs to be 'http', 'https' or 'file')");
+				throw new InternalServerError('Invalid request type (needs to be \'http\', \'https\' or \'file\')');
 			}
 		}
 	}
@@ -94,14 +94,14 @@ export class Origin {
 		const fileTarget = `${this.baseUrl}/${fileName}`;
 
 		// Check for if path given is accessible and is a file before fetching it
-		try{
-			await fs.access(fileTarget)
+		try {
+			await fs.access(fileTarget);
 		} catch {
 			throw new NotFoundError(`File ${fileTarget} does not exist`);
 		}
 
-		const fileState = await fs.lstat(fileTarget)
-		if(!fileState.isFile()){
+		const fileState = await fs.lstat(fileTarget);
+		if (!fileState.isFile()) {
 			throw new NotFoundError(`${fileTarget} is not a file.`);
 		}
 

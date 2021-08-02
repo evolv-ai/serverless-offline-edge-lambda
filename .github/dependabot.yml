@@ -1,0 +1,44 @@
+version: 2
+updates:
+- package-ecosystem: npm
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "13:00"
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: serverless
+    versions:
+    - 2.21.1
+    - 2.22.0
+    - 2.23.0
+    - 2.25.1
+    - 2.25.2
+    - 2.26.0
+    - 2.27.1
+    - 2.28.0
+    - 2.28.5
+    - 2.28.7
+    - 2.29.0
+    - 2.30.0
+    - 2.30.3
+    - 2.31.0
+    - 2.32.1
+    - 2.33.1
+    - 2.34.0
+    - 2.35.0
+    - 2.37.0
+    - 2.37.2
+  - dependency-name: npm
+    versions:
+    - 6.14.11
+    - 6.14.12
+  - dependency-name: "@semantic-release/release-notes-generator"
+    versions:
+    - 9.0.1
+  - dependency-name: "@semantic-release/commit-analyzer"
+    versions:
+    - 6.3.3
+  - dependency-name: "@semantic-release/github"
+    versions:
+    - 5.5.8

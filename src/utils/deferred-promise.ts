@@ -3,7 +3,7 @@
  * of its executor function.
  */
 export class DeferredPromise<T> implements Promise<T> {
-	public resolve!: (value?: T) => void;
+	public resolve!: (value: T) => void;
 	public reject!: (err?: any) => void;
 
 	private readonly promise: Promise<T>;

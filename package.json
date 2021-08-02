@@ -81,6 +81,6 @@
     "serverless": "^1.36.3",
     "snyk": "^1.323.0",
     "tslint": "^6.1.2",
-    "typescript": "^3.2.4"
+    "typescript": "^4.3.5"
   }
 }

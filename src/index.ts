@@ -34,22 +34,27 @@ class OfflineEdgeLambdaPlugin {
 						options: {
 							port: {
 								usage: 'Specify the port that the server will listen on',
-								default: 8080
+								default: 8080,
+								type: 'string'
 							},
 							cloudfrontPort: {
-								usage: '[Deprecated] Specify the port that the server will listen on. Use --port instead'
+								usage: '[Deprecated] Specify the port that the server will listen on. Use --port instead',
+								type: 'string'
 							},
 							disableCache: {
 								usage: 'Disables simulated cache',
-								default: false
+								default: false,
+								type: 'boolean'
 							},
 							cacheDir: {
 								usage: 'Specify the directory where cache file will be stored',
-								required: false
+								required: false,
+								type: 'string'
 							},
 							fileDir: {
 								usage: 'Specify the directory where origin requests will draw from',
-								required: false
+								required: false,
+								type: 'string'
 							}
 						}
 					}

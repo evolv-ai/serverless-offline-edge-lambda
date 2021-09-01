@@ -62,5 +62,10 @@ jobs:
         with:
           node-version: '16'
 
+      - name: Install Node Packages
+        run: |
+          npm ci --production=false
+
       - name: Release
-        run: npx semantic-release
+        run: |
+          npx semantic-release

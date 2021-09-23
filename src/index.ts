@@ -16,7 +16,7 @@ class OfflineEdgeLambdaPlugin {
 		private readonly options: ServerlessOptions
 	) {
 		this.prepareCustomSection();
-
+		
 		this.server = new BehaviorRouter(serverless, options);
 		this.log = serverless.cli.log.bind(serverless.cli);
 

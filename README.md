@@ -65,3 +65,13 @@ custom:
   offlineEdgeLambda:
     path: '.build'
 ```
+
+For usage with `serverless-webpack` and `serverless-bundle` the config is similar but the build path changes.
+```yaml
+plugins:
+  - serverless-webpack # or serverless-bundle
+  
+custom:
+  offlineEdgeLambda:
+    path: './.webpack/service/'
+```

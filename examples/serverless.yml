@@ -6,7 +6,7 @@ plugins:
 
 provider:
   name: aws
-  runtime: nodejs8.10
+  runtime: nodejs12.x
 
 functions:
   onViewerRequest:
@@ -15,11 +15,10 @@ functions:
       distribution: 'WebsiteDistribution'
       eventType: 'viewer-request'
       pathPattern: '/lambda'
-  onOriginRequest:
-    handler: src/handlers.onViewerRequest
-    lambdaAtEdge:
+  onOriginResponse:
+    handler: src/handlers.onViewerResponse
       distribution: 'WebsiteDistribution'
-      eventType: 'origin-request'
+      eventType: 'origin-response'
       pathPattern: '/lambda'
   onOriginResponse:
     handler: src/handlers.onOriginResponse

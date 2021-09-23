@@ -13,9 +13,34 @@ export interface ServerlessInstance {
 		}
 		functions: { [key: string]: ServerlessFunction }
 		package: ServerlessPackage
+		resources?: {
+			Resources?: Record<string, CFDistribution>
+		}
 		getAllFunctions: () => string[]
 	};
 	pluginManager: PluginManager;
+}
+
+/**
+ * A stub for the CF distributions we want details for in the context of this app
+ */
+export interface CFDistribution {
+	Type: string,
+	Properties: {
+		DistributionConfig: {
+			Origins: CFOrigin[]
+		}
+	}
+}
+
+export interface CFOrigin {
+	DomainName: string
+	OriginCustomHeaders: CFCustomHeaders[]
+}
+
+export interface CFCustomHeaders {
+	HeaderName: string,
+	HeaderValue:string
 }
 
 export interface ServerlessOptions {

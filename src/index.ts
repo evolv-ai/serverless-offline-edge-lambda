@@ -65,7 +65,8 @@ class OfflineEdgeLambdaPlugin {
 
 		this.hooks = {
 			'offline:start:init': this.onStart.bind(this),
-			'offline:start:end': this.onEnd.bind(this)
+			'offline:start:end': this.onEnd.bind(this),
+			'webpack:compile:watch:compile': this.onReload.bind(this)
 		};
 	}
 
@@ -74,7 +75,7 @@ class OfflineEdgeLambdaPlugin {
 			const port = this.options.cloudfrontPort || this.options.port || 8080;
 
 			this.log(`CloudFront Offline listening on port ${port}`);
-			await this.server.listen(port);
+			await this.server.start(port);
 		} catch (err) {
 			console.error(err);
 		}
@@ -83,6 +84,17 @@ class OfflineEdgeLambdaPlugin {
 	async onEnd() {
 		await this.server.purgeStorage();
 		this.log(`CloudFront Offline storage purged`);
+	}
+
+	async onReload() {
+		// In the event we have not started the server yet or we are in the process of
+		// restarting the server ignore our changes
+		if (!this.server.hasStarted() || !this.server.isRunning()){
+			return
+		}
+
+		console.log("Restarting server due to function update...")
+		await this.server.restart()
 	}
 
 	private prepareCustomSection() {

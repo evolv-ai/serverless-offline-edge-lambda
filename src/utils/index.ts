@@ -9,4 +9,5 @@ export * from './convert-to-cf-event';
 export * from './deferred-promise';
 export * from './is-response-result';
 export * from './load-module';
+export * from './clear-module';
 export * from './to-result-response';

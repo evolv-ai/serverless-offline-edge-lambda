@@ -3,13 +3,13 @@ import bodyParser from 'body-parser';
 import connect, { HandleFunction } from 'connect';
 import cookieParser from 'cookie-parser';
 import * as fs from 'fs-extra';
-import { createServer, IncomingMessage, ServerResponse } from 'http';
+import { createServer, Server, IncomingMessage, ServerResponse } from 'http';
 import { StatusCodes } from 'http-status-codes';
 import * as os from 'os';
 import * as path from 'path';
 import { URL } from 'url';
-import { HttpError, InternalServerError } from './errors/http';
 
+import { HttpError, InternalServerError } from './errors/http';
 import { FunctionSet } from './function-set';
 import { asyncMiddleware, cloudfrontPost } from './middlewares';
 import { CloudFrontLifecycle, Origin, CacheService } from './services';
@@ -35,8 +35,10 @@ export class BehaviorRouter {
 	private fileDir: string;
 	private path: string;
 
+	private started: boolean = false;
 	private origins: Map<string, Origin>;
-
+	private restarting: boolean = false;
+	private server: Server | null = null
 	private cacheService: CacheService;
 	private log: (message: string) => void;
 
@@ -76,12 +78,56 @@ export class BehaviorRouter {
 		return this.behaviors.get('*') || null;
 	}
 
-	async listen(port: number) {
+	async start(port: number){
+		this.started = true
+		
+		return new Promise(async (res, rej) => {
+			await this.listen(port)
+
+			// While the server is in a "restarting state" just restart the server
+			while (this.restarting){
+				this.restarting = false
+				await this.listen(port, false)
+			}
+
+			res("Server shutting down ...")
+		})
+	}
+
+	public hasStarted(){
+		return this.started
+	}
+
+	public isRunning(){
+		return this.server !== null
+	}
+
+	public async restart(){
+		if(this.restarting){
+			return
+		}
+
+		this.restarting = true
+
+		this.purgeBehaviourFunctions()
+		await this.shutdown()
+	}
+
+	private async shutdown() {
+		if(this.server !== null){
+			await this.server.close()
+		}
+		this.server = null;
+	}
+
+	private async listen(port: number, verbose: boolean = true) {
 		try {
 			await this.extractBehaviors();
-			this.logStorage();
-			this.logBehaviors();
 
+			if(verbose){
+				this.logStorage();
+				this.logBehaviors();
+			}
 			const app = connect();
 
 			app.use(cloudfrontPost());
@@ -133,10 +179,11 @@ export class BehaviorRouter {
 
 
 			return new Promise(resolve => {
-				const server = createServer(app);
-
-				server.listen(port);
-				server.on('close', resolve);
+				this.server = createServer(app);
+				this.server.listen(port);
+				this.server.on('close', (e: string) => {
+					resolve(e)
+				});
 			});
 		} catch (err) {
 			console.error(err);
@@ -198,6 +245,12 @@ export class BehaviorRouter {
 		if (!behaviors.has('*')) {
 			behaviors.set('*', new FunctionSet('*', this.log, this.origins.get('*')));
 		}
+	}
+
+	private purgeBehaviourFunctions() {
+		this.behaviors.forEach((behavior) => {
+			behavior.purgeLoadedFunctions()
+		})
 	}
 
 	private logStorage() {

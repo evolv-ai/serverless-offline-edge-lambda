@@ -15,7 +15,7 @@ const identityRequestHandler = async (event: CloudFrontRequestEvent) => event.Re
 const identityResponseHandler = async (event: CloudFrontResponseEvent) => event.Records[0].cf.response;
 
 export class FunctionSet {
-	protected readonly moduleLoader: ModuleLoader = new ModuleLoader
+	protected readonly moduleLoader: ModuleLoader = new ModuleLoader();
 
 	public readonly regex: RegExp;
 

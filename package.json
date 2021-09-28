@@ -12,6 +12,7 @@
     "watch": "tsc -w",
     "test": "snyk test && echo \"No test specified\"",
     "lint": "tslint --project tsconfig.json",
+    "lint:fix": "tslint --fix --project tsconfig.json",
     "commit": "git-cz",
     "release": "semantic-release --no-ci",
     "release:dry-run": "semantic-release --no-ci --dry-run",

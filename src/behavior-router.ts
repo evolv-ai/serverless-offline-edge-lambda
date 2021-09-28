@@ -38,7 +38,7 @@ export class BehaviorRouter {
 	private started: boolean = false;
 	private origins: Map<string, Origin>;
 	private restarting: boolean = false;
-	private server: Server | null = null
+	private server: Server | null = null;
 	private cacheService: CacheService;
 	private log: (message: string) => void;
 
@@ -78,44 +78,44 @@ export class BehaviorRouter {
 		return this.behaviors.get('*') || null;
 	}
 
-	async start(port: number){
-		this.started = true
-		
+	async start(port: number) {
+		this.started = true;
+
 		return new Promise(async (res, rej) => {
-			await this.listen(port)
+			await this.listen(port);
 
 			// While the server is in a "restarting state" just restart the server
-			while (this.restarting){
-				this.restarting = false
-				await this.listen(port, false)
+			while (this.restarting) {
+				this.restarting = false;
+				await this.listen(port, false);
 			}
 
-			res("Server shutting down ...")
-		})
+			res('Server shutting down ...');
+		});
 	}
 
-	public hasStarted(){
-		return this.started
+	public hasStarted() {
+		return this.started;
 	}
 
-	public isRunning(){
-		return this.server !== null
+	public isRunning() {
+		return this.server !== null;
 	}
 
-	public async restart(){
-		if(this.restarting){
-			return
+	public async restart() {
+		if (this.restarting) {
+			return;
 		}
 
-		this.restarting = true
+		this.restarting = true;
 
-		this.purgeBehaviourFunctions()
-		await this.shutdown()
+		this.purgeBehaviourFunctions();
+		await this.shutdown();
 	}
 
 	private async shutdown() {
-		if(this.server !== null){
-			await this.server.close()
+		if (this.server !== null) {
+			await this.server.close();
 		}
 		this.server = null;
 	}
@@ -124,7 +124,7 @@ export class BehaviorRouter {
 		try {
 			await this.extractBehaviors();
 
-			if(verbose){
+			if (verbose) {
 				this.logStorage();
 				this.logBehaviors();
 			}
@@ -182,7 +182,7 @@ export class BehaviorRouter {
 				this.server = createServer(app);
 				this.server.listen(port);
 				this.server.on('close', (e: string) => {
-					resolve(e)
+					resolve(e);
 				});
 			});
 		} catch (err) {
@@ -249,8 +249,8 @@ export class BehaviorRouter {
 
 	private purgeBehaviourFunctions() {
 		this.behaviors.forEach((behavior) => {
-			behavior.purgeLoadedFunctions()
-		})
+			behavior.purgeLoadedFunctions();
+		});
 	}
 
 	private logStorage() {

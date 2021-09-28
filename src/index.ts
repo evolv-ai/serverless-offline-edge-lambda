@@ -89,12 +89,12 @@ class OfflineEdgeLambdaPlugin {
 	async onReload() {
 		// In the event we have not started the server yet or we are in the process of
 		// restarting the server ignore our changes
-		if (!this.server.hasStarted() || !this.server.isRunning()){
-			return
+		if (!this.server.hasStarted() || !this.server.isRunning()) {
+			return;
 		}
 
-		console.log("Restarting server due to function update...")
-		await this.server.restart()
+		console.log('Restarting server due to function update...');
+		await this.server.restart();
 	}
 
 	private prepareCustomSection() {

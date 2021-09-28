@@ -97,6 +97,6 @@ export class FunctionSet {
 	}
 
 	public purgeLoadedFunctions() {
-		this.moduleLoader.purgeLoadedModules()
+		this.moduleLoader.purgeLoadedModules();
 	}
 }

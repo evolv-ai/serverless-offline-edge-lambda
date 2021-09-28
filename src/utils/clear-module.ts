@@ -1,19 +1,20 @@
 /*
- * <3 Lovingly borrowed from https://github.com/dherault/serverless-offline/blob/master/src/lambda/handler-runner/in-process-runner/InProcessRunner.js
+ * <3 Lovingly borrowed from
+ * https://github.com/dherault/serverless-offline/blob/master/src/lambda/handler-runner/in-process-runner/InProcessRunner.js
  */
-import * as path from "path";
-import * as fs from "fs";
+import * as path from 'path';
+import * as fs from 'fs';
 
 interface ClearModuleOpts {
-    cleanup: boolean
+	cleanup: boolean;
 }
 
 export const clearModule = (filePath: string, opts: ClearModuleOpts) => {
 	const options = opts ?? {};
 
-    if(!require || !require.cache){
-        return
-    }
+	if (!require || !require.cache) {
+		return;
+	}
 
 	if (!require.cache[filePath]) {
 		const dirname = path.dirname(filePath);
@@ -28,7 +29,7 @@ export const clearModule = (filePath: string, opts: ClearModuleOpts) => {
 			}
 		}
 	}
-    
+
 	if (require.cache[filePath]) {
 
 		// Remove file from parent cache
@@ -58,9 +59,9 @@ export const clearModule = (filePath: string, opts: ClearModuleOpts) => {
 				cleanup = false;
 				for (const fn of Object.keys(require.cache)) {
 					if (
-						require?.cache[fn]?.id !== "." &&
+						require?.cache[fn]?.id !== '.' &&
 						require?.cache[fn]?.parent &&
-						require?.cache[fn]?.parent?.id !== "." &&
+						require?.cache[fn]?.parent?.id !== '.' &&
 						!require.cache[require?.cache[fn]?.parent?.id as string]
 					) {
 						delete require.cache[fn];

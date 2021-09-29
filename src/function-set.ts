@@ -5,7 +5,7 @@ import globToRegExp from 'glob-to-regexp';
 
 import { Origin } from './services';
 import { EventType } from './types';
-import { CallbackPromise, loadModule } from './utils';
+import { CallbackPromise, ModuleLoader} from './utils';
 
 
 export type AsyncCloudFrontRequestHandler = (event: CloudFrontRequestEvent, context: Context) => Promise<CloudFrontRequestResult>;
@@ -15,6 +15,8 @@ const identityRequestHandler = async (event: CloudFrontRequestEvent) => event.Re
 const identityResponseHandler = async (event: CloudFrontResponseEvent) => event.Records[0].cf.response;
 
 export class FunctionSet {
+	protected readonly moduleLoader: ModuleLoader = new ModuleLoader();
+
 	public readonly regex: RegExp;
 
 	viewerRequest: Annotated<AsyncCloudFrontRequestHandler> = identityRequestHandler;
@@ -52,7 +54,7 @@ export class FunctionSet {
 	}
 
 	async getRequestHandler(path: string): Promise<AsyncCloudFrontRequestHandler> {
-		const fn = await loadModule(path);
+		const fn = await this.moduleLoader.loadModule(path);
 
 		const handler = async (event: CloudFrontRequestEvent, context: Context) => {
 			const promise = new CallbackPromise();
@@ -76,7 +78,7 @@ export class FunctionSet {
 	}
 
 	async getResponseHandler(path: string): Promise<AsyncCloudFrontResponseHandler> {
-		const fn = await loadModule(path);
+		const fn = await this.moduleLoader.loadModule(path);
 
 		const handler = async (event: CloudFrontResponseEvent, context: Context) => {
 			const deferred = new CallbackPromise();
@@ -92,5 +94,9 @@ export class FunctionSet {
 		handler.path = path;
 
 		return handler;
+	}
+
+	public purgeLoadedFunctions() {
+		this.moduleLoader.purgeLoadedModules();
 	}
 }

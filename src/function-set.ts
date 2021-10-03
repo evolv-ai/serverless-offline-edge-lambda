@@ -28,7 +28,6 @@ export class FunctionSet {
 		private readonly log: (message: string) => void,
 		public readonly origin: Origin = new Origin()
 	) {
-		this.distribution = distribution
 		this.regex = globToRegExp(pattern);
 	}
 

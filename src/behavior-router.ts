@@ -16,7 +16,7 @@ import { CloudFrontLifecycle, Origin, CacheService } from './services';
 import { CFDistribution, ServerlessInstance, ServerlessOptions } from './types';
 import {
 	buildConfig, buildContext, CloudFrontHeadersHelper, ConfigBuilder,
-	convertToCloudFrontEvent, getCustomHeaders, IncomingMessageWithBodyAndCookies
+	convertToCloudFrontEvent, getOriginFromCfDistribution, IncomingMessageWithBodyAndCookies
 } from './utils';
 
 
@@ -30,7 +30,7 @@ export class BehaviorRouter {
 	private builder: ConfigBuilder;
 	private context: Context;
 	private behaviors = new Map<string, FunctionSet>();
-	private cfResources:  Record<string, CFDistribution>
+	private cfResources:  Record<string, CFDistribution>;
 
 	private cacheDir: string;
 	private fileDir: string;
@@ -50,7 +50,7 @@ export class BehaviorRouter {
 		this.builder = buildConfig(serverless);
 		this.context = buildContext();
 
-		this.cfResources = serverless.service?.resources?.Resources || {}
+		this.cfResources = serverless.service?.resources?.Resources || {};
 		this.cacheDir = path.resolve(options.cacheDir || path.join(os.tmpdir(), 'edge-lambda'));
 		this.fileDir = path.resolve(options.fileDir || path.join(os.tmpdir(), 'edge-lambda'));
 		this.path = this.serverless.service.custom.offlineEdgeLambda.path || '';
@@ -106,14 +106,15 @@ export class BehaviorRouter {
 					return;
 				}
 
-				const customHeaders = handler.distribution in this.cfResources ?
-					getCustomHeaders(this.cfResources[handler.distribution]):
-					{}
+				const customOrigin = handler.distribution in this.cfResources ?
+					getOriginFromCfDistribution(handler.pattern, this.cfResources[handler.distribution]) :
+					null;
 
-				const cfEvent = convertToCloudFrontEvent(req, this.builder('viewer-request'), customHeaders);
+				const cfEvent = convertToCloudFrontEvent(req, this.builder('viewer-request'));
 
 				try {
-					const lifecycle = new CloudFrontLifecycle(this.serverless, this.options, cfEvent, this.context, this.cacheService, handler);
+					const lifecycle = new CloudFrontLifecycle(this.serverless, this.options, cfEvent,
+																this.context, this.cacheService, handler, customOrigin);
 					const response = await lifecycle.run(req.url as string);
 
 					if (!response) {
@@ -202,10 +203,10 @@ export class BehaviorRouter {
 			const fnSet = behaviors.get(pattern) as FunctionSet;
 
 			// Don't try to register distributions that come from other sources
-			if(fnSet.distribution !== distribution){
+			if (fnSet.distribution !== distribution) {
 				this.log(`Warning: pattern ${pattern} has registered handlers for cf distributions ${fnSet.distribution}` +
-				         ` and ${distribution}. There is no way to tell which distribution should be used so only ${fnSet.distribution}` +
-						 ` has been registered.` )
+						` and ${distribution}. There is no way to tell which distribution should be used so only ${fnSet.distribution}` +
+						` has been registered.` );
 				continue;
 			}
 
@@ -225,9 +226,9 @@ export class BehaviorRouter {
 
 	private logBehaviors() {
 		this.behaviors.forEach((behavior, key) => {
-			
-			this.log(`Lambdas for path pattern ${key}` + 
-				(behavior.distribution === '' ? ':': ` on ${behavior.distribution}:`)
+
+			this.log(`Lambdas for path pattern ${key}` +
+				(behavior.distribution === '' ? ':' : ` on ${behavior.distribution}:`)
 			);
 
 			behavior.viewerRequest && this.log(`viewer-request => ${behavior.viewerRequest.path || ''}`);

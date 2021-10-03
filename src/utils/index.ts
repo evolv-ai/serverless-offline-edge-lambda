@@ -10,4 +10,4 @@ export * from './deferred-promise';
 export * from './is-response-result';
 export * from './load-module';
 export * from './to-result-response';
-export * from './get-custom-headers'
+export * from './get-origin-from-cf';

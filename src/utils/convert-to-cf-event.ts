@@ -11,12 +11,12 @@ export type IncomingMessageWithBodyAndCookies = IncomingMessage & {
 	cookies: Record<string, string>;
 };
 
-export function convertToCloudFrontEvent(req: IncomingMessageWithBodyAndCookies, config: CloudFrontConfig, customHeaders: Record<string, string>): CloudFrontRequestEvent {
+export function convertToCloudFrontEvent(req: IncomingMessageWithBodyAndCookies, config: CloudFrontConfig): CloudFrontRequestEvent {
 	const url = parse(req.url as string, false) as UrlWithStringQuery;
 	const request = {
 		clientIp: req.socket.remoteAddress as string,
 		method: req.method as string,
-		headers: toCloudFrontHeaders({...customHeaders, ...req.headers}),
+		headers: toCloudFrontHeaders(req.headers),
 		uri: url.pathname as string,
 		querystring:  url.query || '',
 		body: req.body,

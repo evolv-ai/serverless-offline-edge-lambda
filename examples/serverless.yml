@@ -15,10 +15,10 @@ functions:
       distribution: 'WebsiteDistribution'
       eventType: 'viewer-request'
       pathPattern: '/lambda'
-  onOriginResponse:
-    handler: src/handlers.onViewerResponse
+  onOriginRequest:
+    handler: src/handlers.onOriginRequest
       distribution: 'WebsiteDistribution'
-      eventType: 'origin-response'
+      eventType: 'origin-request'
       pathPattern: '/lambda'
   onOriginResponse:
     handler: src/handlers.onOriginResponse

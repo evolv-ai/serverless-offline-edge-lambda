@@ -102,7 +102,7 @@ export class CloudFrontLifecycle {
 		this.log('→ origin-request');
 
 		// Inject origin into request once we reach the origin request step
-		// as it is not available in origin requests
+		// as it is not available in viewer requests
 		this.injectOriginIntoRequest();
 
 		const result = await this.fnSet.originRequest(this.event, this.context);

@@ -1,5 +1,5 @@
 import {
-	CloudFrontRequestEvent, CloudFrontResponseResult, CloudFrontResultResponse, Context
+	CloudFrontRequestEvent, CloudFrontResponseResult, CloudFrontOrigin, Context
 } from 'aws-lambda';
 
 import { NoResult } from '../errors';
@@ -19,7 +19,8 @@ export class CloudFrontLifecycle {
 		private event: CloudFrontRequestEvent,
 		private context: Context,
 		private fileService: CacheService,
-		private fnSet: FunctionSet
+		private fnSet: FunctionSet,
+		private origin: CloudFrontOrigin | null,
 	) {
 		this.log = serverless.cli.log.bind(serverless.cli);
 	}
@@ -85,6 +86,7 @@ export class CloudFrontLifecycle {
 			throw new NoResult();
 		} else {
 			this.log('✓ Cache hit');
+			throw new NoResult();
 		}
 
 		const result = toResultResponse(cached);
@@ -98,6 +100,10 @@ export class CloudFrontLifecycle {
 
 	async onOriginRequest() {
 		this.log('→ origin-request');
+
+		// Inject origin into request once we reach the origin request step
+		// as it is not available in viewer requests
+		this.injectOriginIntoRequest();
 
 		const result = await this.fnSet.originRequest(this.event, this.context);
 
@@ -115,5 +121,11 @@ export class CloudFrontLifecycle {
 
 		const event = combineResult(this.event, result);
 		return this.fnSet.originResponse(event, this.context);
+	}
+
+	protected injectOriginIntoRequest() {
+		if (this?.event?.Records[0]?.cf?.request && this.origin !== null) {
+			this.event.Records[0].cf.request.origin = this.origin;
+		}
 	}
 }

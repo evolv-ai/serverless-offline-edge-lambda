@@ -17,7 +17,7 @@ export function convertToCloudFrontEvent(req: IncomingMessageWithBodyAndCookies,
 		clientIp: req.socket.remoteAddress as string,
 		method: req.method as string,
 		headers: toCloudFrontHeaders(req.headers),
-		uri: url.href as string,
+		uri: url.pathname as string,
 		querystring:  url.query || '',
 		body: req.body,
 		cookies: req.cookies

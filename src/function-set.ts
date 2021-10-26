@@ -26,6 +26,7 @@ export class FunctionSet {
 
 	constructor(
 		public readonly pattern: string,
+		public readonly distribution: string,
 		private readonly log: (message: string) => void,
 		public readonly origin: Origin = new Origin()
 	) {

@@ -11,3 +11,4 @@ export * from './is-response-result';
 export * from './load-module';
 export * from './clear-module';
 export * from './to-result-response';
+export * from './get-origin-from-cf';

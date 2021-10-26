@@ -13,10 +13,10 @@ import { HttpError, InternalServerError } from './errors/http';
 import { FunctionSet } from './function-set';
 import { asyncMiddleware, cloudfrontPost } from './middlewares';
 import { CloudFrontLifecycle, Origin, CacheService } from './services';
-import { ServerlessInstance, ServerlessOptions } from './types';
+import { CFDistribution, ServerlessInstance, ServerlessOptions } from './types';
 import {
 	buildConfig, buildContext, CloudFrontHeadersHelper, ConfigBuilder,
-	convertToCloudFrontEvent, IncomingMessageWithBodyAndCookies
+	convertToCloudFrontEvent, getOriginFromCfDistribution, IncomingMessageWithBodyAndCookies
 } from './utils';
 
 
@@ -30,6 +30,7 @@ export class BehaviorRouter {
 	private builder: ConfigBuilder;
 	private context: Context;
 	private behaviors = new Map<string, FunctionSet>();
+	private cfResources:  Record<string, CFDistribution>;
 
 	private cacheDir: string;
 	private fileDir: string;
@@ -51,6 +52,7 @@ export class BehaviorRouter {
 		this.builder = buildConfig(serverless);
 		this.context = buildContext();
 
+		this.cfResources = serverless.service?.resources?.Resources || {};
 		this.cacheDir = path.resolve(options.cacheDir || path.join(os.tmpdir(), 'edge-lambda'));
 		this.fileDir = path.resolve(options.fileDir || path.join(os.tmpdir(), 'edge-lambda'));
 		this.path = this.serverless.service.custom.offlineEdgeLambda.path || '';
@@ -143,7 +145,6 @@ export class BehaviorRouter {
 				}
 
 				const handler = this.match(req);
-				const cfEvent = convertToCloudFrontEvent(req, this.builder('viewer-request'));
 
 				if (!handler) {
 					res.statusCode = StatusCodes.NOT_FOUND;
@@ -151,8 +152,15 @@ export class BehaviorRouter {
 					return;
 				}
 
+				const customOrigin = handler.distribution in this.cfResources ?
+					getOriginFromCfDistribution(handler.pattern, this.cfResources[handler.distribution]) :
+					null;
+
+				const cfEvent = convertToCloudFrontEvent(req, this.builder('viewer-request'));
+
 				try {
-					const lifecycle = new CloudFrontLifecycle(this.serverless, this.options, cfEvent, this.context, this.cacheService, handler);
+					const lifecycle = new CloudFrontLifecycle(this.serverless, this.options, cfEvent,
+																this.context, this.cacheService, handler, customOrigin);
 					const response = await lifecycle.run(req.url as string);
 
 					if (!response) {
@@ -230,20 +238,30 @@ export class BehaviorRouter {
 		behaviors.clear();
 
 		for await (const [, def] of lambdaDefs) {
+
 			const pattern = def.lambdaAtEdge.pathPattern || '*';
+			const distribution = def.lambdaAtEdge.distribution || '';
 
 			if (!behaviors.has(pattern)) {
 				const origin = this.origins.get(pattern);
-				behaviors.set(pattern, new FunctionSet(pattern, this.log, origin));
+				behaviors.set(pattern, new FunctionSet(pattern, distribution, this.log, origin));
 			}
 
 			const fnSet = behaviors.get(pattern) as FunctionSet;
+
+			// Don't try to register distributions that come from other sources
+			if (fnSet.distribution !== distribution) {
+				this.log(`Warning: pattern ${pattern} has registered handlers for cf distributions ${fnSet.distribution}` +
+						` and ${distribution}. There is no way to tell which distribution should be used so only ${fnSet.distribution}` +
+						` has been registered.` );
+				continue;
+			}
 
 			await fnSet.setHandler(def.lambdaAtEdge.eventType, path.join(this.path, def.handler));
 		}
 
 		if (!behaviors.has('*')) {
-			behaviors.set('*', new FunctionSet('*', this.log, this.origins.get('*')));
+			behaviors.set('*', new FunctionSet('*', '', this.log, this.origins.get('*')));
 		}
 	}
 
@@ -261,7 +279,10 @@ export class BehaviorRouter {
 
 	private logBehaviors() {
 		this.behaviors.forEach((behavior, key) => {
-			this.log(`Lambdas for path pattern ${key}: `);
+
+			this.log(`Lambdas for path pattern ${key}` +
+				(behavior.distribution === '' ? ':' : ` on ${behavior.distribution}:`)
+			);
 
 			behavior.viewerRequest && this.log(`viewer-request => ${behavior.viewerRequest.path || ''}`);
 			behavior.originRequest && this.log(`origin-request => ${behavior.originRequest.path || ''}`);

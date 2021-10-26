@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/evolv-ai/serverless-offline-edge-lambda/compare/1.1.2...1.2.0) (2021-10-26)
+
+
+### Features
+
+* add support for custom headers from origins ([#261](https://github.com/evolv-ai/serverless-offline-edge-lambda/issues/261)) ([3fbe995](https://github.com/evolv-ai/serverless-offline-edge-lambda/commit/3fbe9959c8a057b7b7d0d2f7361e42a211eedfd1))
+
 ## [1.1.2](https://github.com/evolv-ai/serverless-offline-edge-lambda/compare/1.1.1...1.1.2) (2021-09-01)
 
 

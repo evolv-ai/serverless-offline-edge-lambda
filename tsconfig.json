@@ -10,7 +10,8 @@
 		"strict": true,
 		"esModuleInterop": true,
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "useUnknownInCatchVariables": false
 	},
 	"exclude": [
     "dist",

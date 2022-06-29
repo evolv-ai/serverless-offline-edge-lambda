@@ -123,7 +123,7 @@ export class Origin {
 			method: request.method,
 			protocol: baseUrl.protocol,
 			hostname: baseUrl.hostname,
-			port: baseUrl.port || (baseUrl.protocol === 'https:') ? 443 : 80,
+			port: baseUrl.port || (baseUrl.protocol === 'https:' ? 443 : 80),
 			path: uri.path,
 			headers: {
 				...headers,

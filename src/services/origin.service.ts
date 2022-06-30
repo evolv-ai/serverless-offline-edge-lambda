@@ -144,7 +144,9 @@ export class Origin {
 				});
 				res.on('error', (err: Error) => reject(err));
 			});
-
+			if (request.body && request.body.data) {
+				req.write(request.body.data);
+			}
 			req.end();
 		});
 	}

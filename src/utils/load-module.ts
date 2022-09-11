@@ -1,5 +1,5 @@
 import { resolve } from 'path';
-import {clearModule} from './clear-module';
+import { clearModule } from './clear-module';
 
 export class ModuleLoader {
 	protected loadedModules: string[] = [];
@@ -15,6 +15,7 @@ export class ModuleLoader {
 		const [, modulePath, functionName] = match;
 		const absPath = resolve(modulePath);
 
+		delete require.cache[require.resolve(absPath)];
 		const module = await import(absPath);
 
 		this.loadedModules.push(absPath);

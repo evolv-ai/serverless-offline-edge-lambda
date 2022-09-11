@@ -2,13 +2,14 @@ import { Context } from 'aws-lambda';
 import bodyParser from 'body-parser';
 import connect, { HandleFunction } from 'connect';
 import cookieParser from 'cookie-parser';
+import * as chokidar from 'chokidar';
 import * as fs from 'fs-extra';
 import { createServer, Server, IncomingMessage, ServerResponse } from 'http';
 import { StatusCodes } from 'http-status-codes';
 import * as os from 'os';
 import * as path from 'path';
 import { URL } from 'url';
-
+import { debounce } from './utils/debounce';
 import { HttpError, InternalServerError } from './errors/http';
 import { FunctionSet } from './function-set';
 import { asyncMiddleware, cloudfrontPost } from './middlewares';
@@ -30,7 +31,7 @@ export class BehaviorRouter {
 	private builder: ConfigBuilder;
 	private context: Context;
 	private behaviors = new Map<string, FunctionSet>();
-	private cfResources:  Record<string, CFDistribution>;
+	private cfResources: Record<string, CFDistribution>;
 
 	private cacheDir: string;
 	private fileDir: string;
@@ -55,13 +56,32 @@ export class BehaviorRouter {
 		this.cfResources = serverless.service?.resources?.Resources || {};
 		this.cacheDir = path.resolve(options.cacheDir || path.join(os.tmpdir(), 'edge-lambda'));
 		this.fileDir = path.resolve(options.fileDir || path.join(os.tmpdir(), 'edge-lambda'));
-		this.path = this.serverless.service.custom.offlineEdgeLambda.path || '';
+		this.path = this.serverless.service.custom.offlineEdgeLambda.path || '.';
 
 		fs.mkdirpSync(this.cacheDir);
 		fs.mkdirpSync(this.fileDir);
 
 		this.origins = this.configureOrigins();
 		this.cacheService = new CacheService(this.cacheDir);
+
+		if (this.serverless.service.custom.offlineEdgeLambda.watchReload) {
+			this.watchFiles(this.path + '/**/*', {
+				ignoreInitial: true,
+				awaitWriteFinish: true,
+				interval: 500,
+				debounce: 750,
+				...options,
+			});
+		}
+	}
+
+	watchFiles(pattern: any, options: any) {
+		const watcher = chokidar.watch(pattern, options);
+		watcher.on('all', debounce(async (eventName, srcPath) => {
+			console.log('Lambda files changed, syncing...');
+			await this.extractBehaviors();
+			console.log('Lambda files synced');
+		}, options.debounce, true));
 	}
 
 	match(req: IncomingMessage): FunctionSet | null {
@@ -160,7 +180,7 @@ export class BehaviorRouter {
 
 				try {
 					const lifecycle = new CloudFrontLifecycle(this.serverless, this.options, cfEvent,
-																this.context, this.cacheService, handler, customOrigin);
+						this.context, this.cacheService, handler, customOrigin);
 					const response = await lifecycle.run(req.url as string);
 
 					if (!response) {
@@ -172,7 +192,10 @@ export class BehaviorRouter {
 
 					const helper = new CloudFrontHeadersHelper(response.headers);
 
-					for (const { key, value } of helper.asHttpHeaders()) {
+					for (const {
+						key,
+						value
+					} of helper.asHttpHeaders()) {
 						if (value) {
 							res.setHeader(key as string, value);
 						}
@@ -252,8 +275,8 @@ export class BehaviorRouter {
 			// Don't try to register distributions that come from other sources
 			if (fnSet.distribution !== distribution) {
 				this.log(`Warning: pattern ${pattern} has registered handlers for cf distributions ${fnSet.distribution}` +
-						` and ${distribution}. There is no way to tell which distribution should be used so only ${fnSet.distribution}` +
-						` has been registered.` );
+					` and ${distribution}. There is no way to tell which distribution should be used so only ${fnSet.distribution}` +
+					` has been registered.`);
 				continue;
 			}
 

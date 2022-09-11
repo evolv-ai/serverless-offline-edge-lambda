@@ -1,6 +1,6 @@
 {
   "name": "serverless-offline-edge-lambda",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "A plugin for the Serverless Framework that simulates the behavior of AWS CloudFront Edge Lambdas while developing offline.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -49,6 +49,7 @@
   ],
   "dependencies": {
     "body-parser": "^1.19.0",
+    "chokidar": "^3.5.3",
     "connect": "^3.7.0",
     "cookie-parser": "^1.4.5",
     "flat-cache": "^3.0.4",

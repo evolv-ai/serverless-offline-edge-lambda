@@ -31,7 +31,7 @@ export class BehaviorRouter {
 	private builder: ConfigBuilder;
 	private context: Context;
 	private behaviors = new Map<string, FunctionSet>();
-	private cfResources: Record<string, CFDistribution>;
+	private cfResources:  Record<string, CFDistribution>;
 
 	private cacheDir: string;
 	private fileDir: string;
@@ -180,7 +180,7 @@ export class BehaviorRouter {
 
 				try {
 					const lifecycle = new CloudFrontLifecycle(this.serverless, this.options, cfEvent,
-						this.context, this.cacheService, handler, customOrigin);
+																this.context, this.cacheService, handler, customOrigin);
 					const response = await lifecycle.run(req.url as string);
 
 					if (!response) {
@@ -192,10 +192,7 @@ export class BehaviorRouter {
 
 					const helper = new CloudFrontHeadersHelper(response.headers);
 
-					for (const {
-						key,
-						value
-					} of helper.asHttpHeaders()) {
+					for (const { key, value } of helper.asHttpHeaders()) {
 						if (value) {
 							res.setHeader(key as string, value);
 						}
@@ -275,8 +272,8 @@ export class BehaviorRouter {
 			// Don't try to register distributions that come from other sources
 			if (fnSet.distribution !== distribution) {
 				this.log(`Warning: pattern ${pattern} has registered handlers for cf distributions ${fnSet.distribution}` +
-					` and ${distribution}. There is no way to tell which distribution should be used so only ${fnSet.distribution}` +
-					` has been registered.`);
+						` and ${distribution}. There is no way to tell which distribution should be used so only ${fnSet.distribution}` +
+						` has been registered.` );
 				continue;
 			}
 

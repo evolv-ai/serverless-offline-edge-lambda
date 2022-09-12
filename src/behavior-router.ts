@@ -56,7 +56,7 @@ export class BehaviorRouter {
 		this.cfResources = serverless.service?.resources?.Resources || {};
 		this.cacheDir = path.resolve(options.cacheDir || path.join(os.tmpdir(), 'edge-lambda'));
 		this.fileDir = path.resolve(options.fileDir || path.join(os.tmpdir(), 'edge-lambda'));
-		this.path = this.serverless.service.custom.offlineEdgeLambda.path || '.';
+		this.path = this.serverless.service.custom.offlineEdgeLambda.path || '';
 
 		fs.mkdirpSync(this.cacheDir);
 		fs.mkdirpSync(this.fileDir);
@@ -65,7 +65,7 @@ export class BehaviorRouter {
 		this.cacheService = new CacheService(this.cacheDir);
 
 		if (this.serverless.service.custom.offlineEdgeLambda.watchReload) {
-			this.watchFiles(this.path + '/**/*', {
+			this.watchFiles(path.join(this.path, '**/*'), {
 				ignoreInitial: true,
 				awaitWriteFinish: true,
 				interval: 500,

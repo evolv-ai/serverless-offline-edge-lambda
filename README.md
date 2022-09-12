@@ -14,7 +14,7 @@ _serverless.yml_
 ```yaml
 service:
   name: edge-lambdas
-  
+
 plugins:
   - serverless-offline-edge-lambda
 
@@ -60,7 +60,7 @@ a configuration option `path` that it uses to resolve function handlers.
 ```yaml
 plugins:
   - serverless-plugin-typescript
-    
+
 custom:
   offlineEdgeLambda:
     path: '.build'
@@ -70,8 +70,40 @@ For usage with `serverless-webpack` and `serverless-bundle` the config is simila
 ```yaml
 plugins:
   - serverless-webpack # or serverless-bundle
-  
+
 custom:
   offlineEdgeLambda:
     path: './.webpack/service/'
+```
+
+### Hot Reload Support
+
+Hot reload for serverless-esbuild and serverless-plugin-typescript are available with extra configuration.
+
+The watch/reload mechanism is available form serverless-webpack, but is disabled by default for esbuild and typescript.
+
+The flag "watchReload: true" will turn on the watcher so that typescript and esbuild solutions use the watcher to hot reload the handlers.
+The path to the built handlers must be specified for the watcher to work correctly.
+
+example:
+```yaml
+custom:
+  offlineEdgeLambda:
+    path: '.esbuild/service'
+    watchReload: true
+```
+
+Additional options can be used to modify the behavior of the file watcher and debounce logic (ignoreInitial, awaitWriteFinish, interval, debounce, and any other chokidar option).
+
+example:
+
+```yaml
+custom:
+  offlineEdgeLambda:
+    path: '.dist/service'
+    watchReload: true
+    ignoreInitial: true
+    awaitWriteFinish: true
+    interval: 500,
+    debounce: 750
 ```

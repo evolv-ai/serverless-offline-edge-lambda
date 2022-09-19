@@ -177,9 +177,9 @@ export class BehaviorRouter {
 							res.setHeader(key as string, value);
 						}
 					}
-					
+
 					if (response.bodyEncoding === 'base64') {
-						res.end(Buffer.from(response.body, 'base64').toString('utf-8'));
+						res.end(Buffer.from(response.body ?? '', 'base64').toString('utf-8'));
 					} else {
 						res.end(response.body);
 					}

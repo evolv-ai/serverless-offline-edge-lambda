@@ -2,13 +2,14 @@ import { Context } from 'aws-lambda';
 import bodyParser from 'body-parser';
 import connect, { HandleFunction } from 'connect';
 import cookieParser from 'cookie-parser';
+import * as chokidar from 'chokidar';
 import * as fs from 'fs-extra';
 import { createServer, Server, IncomingMessage, ServerResponse } from 'http';
 import { StatusCodes } from 'http-status-codes';
 import * as os from 'os';
 import * as path from 'path';
 import { URL } from 'url';
-
+import { debounce } from './utils/debounce';
 import { HttpError, InternalServerError } from './errors/http';
 import { FunctionSet } from './function-set';
 import { asyncMiddleware, cloudfrontPost } from './middlewares';
@@ -62,6 +63,25 @@ export class BehaviorRouter {
 
 		this.origins = this.configureOrigins();
 		this.cacheService = new CacheService(this.cacheDir);
+
+		if (this.serverless.service.custom.offlineEdgeLambda.watchReload) {
+			this.watchFiles(path.join(this.path, '**/*'), {
+				ignoreInitial: true,
+				awaitWriteFinish: true,
+				interval: 500,
+				debounce: 750,
+				...options,
+			});
+		}
+	}
+
+	watchFiles(pattern: any, options: any) {
+		const watcher = chokidar.watch(pattern, options);
+		watcher.on('all', debounce(async (eventName, srcPath) => {
+			console.log('Lambda files changed, syncing...');
+			await this.extractBehaviors();
+			console.log('Lambda files synced');
+		}, options.debounce, true));
 	}
 
 	match(req: IncomingMessage): FunctionSet | null {

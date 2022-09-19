@@ -17,7 +17,7 @@
     "release": "semantic-release --no-ci",
     "release:dry-run": "semantic-release --no-ci --dry-run",
     "snyk-protect": "snyk protect",
-    "prepare": "npm run snyk-protect"
+    "prepare": "npm run snyk-protect && npm run build"
   },
   "config": {
     "commitizen": {
@@ -49,6 +49,7 @@
   ],
   "dependencies": {
     "body-parser": "^1.20.0",
+    "chokidar": "^3.5.3",
     "connect": "^3.7.0",
     "cookie-parser": "^1.4.6",
     "flat-cache": "^3.0.4",

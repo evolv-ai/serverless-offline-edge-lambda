@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/evolv-ai/serverless-offline-edge-lambda/compare/1.2.0...1.2.1) (2022-09-19)
+
+
+### Bug Fixes
+
+* fix issues with http requests ([#480](https://github.com/evolv-ai/serverless-offline-edge-lambda/issues/480)) ([85c8921](https://github.com/evolv-ai/serverless-offline-edge-lambda/commit/85c8921bd83bb039a5c4ac3ef1c8ab00349e3434))
+
 # [1.2.0](https://github.com/evolv-ai/serverless-offline-edge-lambda/compare/1.1.2...1.2.0) (2021-10-26)
 
 

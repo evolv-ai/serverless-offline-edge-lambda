@@ -1,6 +1,6 @@
 /**
  * The `DeferredPromise` class provides a mechanism for resolving a promise from outside
- * of its executor function.
+ * its executor function.
  */
 export class DeferredPromise<T> implements Promise<T> {
 	public resolve!: (value: T) => void;
@@ -8,7 +8,7 @@ export class DeferredPromise<T> implements Promise<T> {
 
 	private readonly promise: Promise<T>;
 
-	[Symbol.toStringTag]: 'Promise';
+	[Symbol.toStringTag] = 'Promise';
 
 	constructor() {
 		this.promise = new Promise<T>((resolve, reject) => {

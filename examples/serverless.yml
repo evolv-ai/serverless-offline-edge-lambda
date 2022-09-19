@@ -17,6 +17,7 @@ functions:
       pathPattern: '/lambda'
   onOriginRequest:
     handler: src/handlers.onOriginRequest
+    lambdaAtEdge:
       distribution: 'WebsiteDistribution'
       eventType: 'origin-request'
       pathPattern: '/lambda'
@@ -43,7 +44,7 @@ resources:
     WebsiteDistribution:
       Type: 'AWS::CloudFront::Distribution'
       Properties:
-        DistributionConfig:
+        DistributionConfig: {}
 
 custom:
   offlineEdgeLambda:

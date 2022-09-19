@@ -1,3 +1,10 @@
+## [1.2.2](https://github.com/evolv-ai/serverless-offline-edge-lambda/compare/1.2.1...1.2.2) (2022-09-19)
+
+
+### Bug Fixes
+
+* Hot reloading with chokidar & busting of the require cache. ([#515](https://github.com/evolv-ai/serverless-offline-edge-lambda/issues/515)) ([703d1f4](https://github.com/evolv-ai/serverless-offline-edge-lambda/commit/703d1f4fe2f0cf4365425108be55d0c1cb17acff))
+
 ## [1.2.1](https://github.com/evolv-ai/serverless-offline-edge-lambda/compare/1.2.0...1.2.1) (2022-09-19)
 
 

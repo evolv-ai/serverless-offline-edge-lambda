@@ -1,3 +1,10 @@
+## [1.2.3](https://github.com/evolv-ai/serverless-offline-edge-lambda/compare/1.2.2...1.2.3) (2022-09-22)
+
+
+### Bug Fixes
+
+* removed toString('utf-8') in bahvior-router. ([#535](https://github.com/evolv-ai/serverless-offline-edge-lambda/issues/535)) ([c30fc10](https://github.com/evolv-ai/serverless-offline-edge-lambda/commit/c30fc1091f9b2879eea2a211ddef684ad2113fbc))
+
 ## [1.2.2](https://github.com/evolv-ai/serverless-offline-edge-lambda/compare/1.2.1...1.2.2) (2022-09-19)
 
 

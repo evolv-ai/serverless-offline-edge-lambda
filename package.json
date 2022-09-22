@@ -10,24 +10,18 @@
     "build": "tsc",
     "prewatch": "rimraf dist",
     "watch": "tsc -w",
-    "test": "snyk test && echo \"No test specified\"",
+    "test": "echo \"No test specified\"",
     "lint": "tslint --project tsconfig.json",
     "lint:fix": "tslint --fix --project tsconfig.json",
     "commit": "git-cz",
     "release": "semantic-release --no-ci",
     "release:dry-run": "semantic-release --no-ci --dry-run",
     "snyk-protect": "snyk protect",
-    "prepare": "npm run snyk-protect && npm run build"
+    "prepare": "npm run snyk-protect && npm run build && husky install"
   },
   "config": {
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
-    }
-  },
-  "husky": {
-    "hooks": {
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
-      "pre-commit": "npm run lint && npm test"
     }
   },
   "contributors": [
@@ -80,7 +74,7 @@
     "@types/glob-to-regexp": "^0.4.0",
     "commitizen": "^4.2.5",
     "cz-conventional-changelog": "^3.3.0",
-    "husky": "^7.0.4",
+    "husky": "^8.0.0",
     "rimraf": "^3.0.2",
     "semantic-release": "^19.0.5",
     "snyk": "^1.1011.0",

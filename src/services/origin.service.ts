@@ -3,8 +3,8 @@ import * as fs from 'fs-extra';
 import * as http from 'http';
 import * as https from 'https';
 import * as path from 'path';
-
 import { parse } from 'url';
+
 import { toHttpHeaders } from '../utils';
 import { OutgoingHttpHeaders } from 'http';
 import { InternalServerError, NotFoundError } from '../errors/http';
@@ -15,8 +15,6 @@ export class Origin {
 	private readonly type: 'http' | 'https' | 'file' | 'noop' = 'http';
 
 	constructor(public readonly baseUrl: string = '') {
-		const regex = /^https?:\/\//;
-
 		if (!baseUrl) {
 			this.type = 'noop';
 		} else if (/^http:\/\//.test(baseUrl)) {
@@ -50,6 +48,7 @@ export class Origin {
 			// Make sure error gets back to user
 			const status = err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR;
 			const reasonPhrase = err.reasonPhrase || 'Internal Server Error';
+
 			return {
 				status: status,
 				statusDescription: reasonPhrase,
@@ -123,7 +122,7 @@ export class Origin {
 			method: request.method,
 			protocol: baseUrl.protocol,
 			hostname: baseUrl.hostname,
-			port: baseUrl.port || (baseUrl.protocol === 'https:') ? 443 : 80,
+			port: baseUrl.port || (baseUrl.protocol === 'https:' ? 443 : 80),
 			path: uri.path,
 			headers: {
 				...headers,
@@ -144,6 +143,10 @@ export class Origin {
 				});
 				res.on('error', (err: Error) => reject(err));
 			});
+
+			if (request.body && request.body.data) {
+				req.write(request.body.data);
+			}
 
 			req.end();
 		});

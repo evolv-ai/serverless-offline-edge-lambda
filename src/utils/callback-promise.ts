@@ -9,7 +9,7 @@ export class CallbackPromise<T = any> implements Promise<T> {
 	private readonly promise = new DeferredPromise<T>();
 	private hasBeenCalled: boolean = false;
 
-	[Symbol.toStringTag]: 'Promise';
+	[Symbol.toStringTag] = 'Promise';
 
 	constructor(strict: boolean = true) {
 		this.callback = (err: any | null, result: T) => {

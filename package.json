@@ -1,6 +1,6 @@
 {
   "name": "serverless-offline-edge-lambda",
-  "version": "1.2.0",
+  "version": "1.2.2",
   "description": "A plugin for the Serverless Framework that simulates the behavior of AWS CloudFront Edge Lambdas while developing offline.",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -17,7 +17,7 @@
     "release": "semantic-release --no-ci",
     "release:dry-run": "semantic-release --no-ci --dry-run",
     "snyk-protect": "snyk protect",
-    "prepare": "npm run snyk-protect"
+    "prepare": "npm run snyk-protect && npm run build"
   },
   "config": {
     "commitizen": {
@@ -48,13 +48,15 @@
     "edge lambdas"
   ],
   "dependencies": {
-    "body-parser": "^1.19.0",
+    "body-parser": "^1.20.0",
+    "chokidar": "^3.5.3",
     "connect": "^3.7.0",
-    "cookie-parser": "^1.4.5",
+    "cookie-parser": "^1.4.6",
     "flat-cache": "^3.0.4",
-    "fs-extra": "^10.0.0",
+    "fs-extra": "^10.1.0",
+    "fsevents": "^2.3.2",
     "glob-to-regexp": "^0.4.1",
-    "http-status-codes": "^2.1.4"
+    "http-status-codes": "^2.2.0"
   },
   "peerDependencies": {
     "serverless": ">=1.36.0"
@@ -63,26 +65,26 @@
     "fsevents": "^2.3.2"
   },
   "devDependencies": {
-    "@commitlint/cli": "^15.0.0",
-    "@commitlint/config-conventional": "^15.0.0",
+    "@commitlint/cli": "^17.1.2",
+    "@commitlint/config-conventional": "^17.1.0",
     "@semantic-release/changelog": "^5.0.1",
     "@semantic-release/commit-analyzer": "^8.0.1",
-    "@semantic-release/git": "^9.0.1",
+    "@semantic-release/git": "^10.0.1",
     "@semantic-release/github": "^7.2.3",
     "@semantic-release/release-notes-generator": "^9.0.3",
-    "@types/aws-lambda": "^8.10.85",
+    "@types/aws-lambda": "^8.10.104",
     "@types/body-parser": "^1.19.2",
     "@types/connect": "^3.4.35",
-    "@types/cookie-parser": "^1.4.2",
+    "@types/cookie-parser": "^1.4.3",
     "@types/fs-extra": "^9.0.13",
     "@types/glob-to-regexp": "^0.4.0",
-    "commitizen": "^4.2.4",
+    "commitizen": "^4.2.5",
     "cz-conventional-changelog": "^3.3.0",
     "husky": "^7.0.4",
     "rimraf": "^3.0.2",
-    "semantic-release": "^17.4.4",
-    "snyk": "^1.783.0",
+    "semantic-release": "^19.0.5",
+    "snyk": "^1.1006.0",
     "tslint": "^6.1.2",
-    "typescript": "^4.3.5"
+    "typescript": "^4.8.3"
   }
 }

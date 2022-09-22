@@ -199,7 +199,7 @@ export class BehaviorRouter {
 					}
 
 					if (response.bodyEncoding === 'base64') {
-						res.end(Buffer.from(response.body ?? '', 'base64').toString('utf-8'));
+						res.end(Buffer.from(response.body ?? '', 'base64'));
 					} else {
 						res.end(response.body);
 					}

@@ -76,6 +76,7 @@ export interface ServerlessOptions {
 	disableCache: boolean;
 	fileDir: string;
 	port: number;
+	headersFile: string;
 }
 
 export interface EdgeLambdaOptions {
@@ -85,6 +86,7 @@ export interface EdgeLambdaOptions {
 }
 
 export interface ServerlessFunction {
+	name: string;
 	handler: string;
 	package: ServerlessPackage;
 	lambdaAtEdge: EdgeLambdaOptions;

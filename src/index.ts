@@ -56,6 +56,11 @@ class OfflineEdgeLambdaPlugin {
 								usage: 'Specify the directory where origin requests will draw from',
 								required: false,
 								type: 'string'
+							},
+							headersFile: {
+								usage: 'Specify the file (JSON) where injected CloudFront headers will be taken from',
+								required: false,
+								type: 'string'
 							}
 						}
 					}

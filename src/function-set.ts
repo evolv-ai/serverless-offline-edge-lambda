@@ -28,7 +28,8 @@ export class FunctionSet {
 		public readonly pattern: string,
 		public readonly distribution: string,
 		private readonly log: (message: string) => void,
-		public readonly origin: Origin = new Origin()
+		public readonly origin: Origin = new Origin(),
+		public readonly name: string = ''
 	) {
 		this.regex = globToRegExp(pattern);
 	}

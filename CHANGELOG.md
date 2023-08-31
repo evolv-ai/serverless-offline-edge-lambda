@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/evolv-ai/serverless-offline-edge-lambda/compare/1.2.3...1.3.0) (2023-08-31)
+
+
+### Features
+
+* add function name to context and event headers ([#624](https://github.com/evolv-ai/serverless-offline-edge-lambda/issues/624)) ([6be415a](https://github.com/evolv-ai/serverless-offline-edge-lambda/commit/6be415a3146f0ff13719b22f000e4eabe17b5586))
+
 ## [1.2.3](https://github.com/evolv-ai/serverless-offline-edge-lambda/compare/1.2.2...1.2.3) (2022-09-22)
 
 

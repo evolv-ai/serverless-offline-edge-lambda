@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/evolv-ai/serverless-offline-edge-lambda/compare/1.3.0...1.3.1) (2023-08-31)
+
+
+### Bug Fixes
+
+* **deps:** bump fs-extra and @types/fs-extra ([#637](https://github.com/evolv-ai/serverless-offline-edge-lambda/issues/637)) ([34d5765](https://github.com/evolv-ai/serverless-offline-edge-lambda/commit/34d57650f92ea282683189e5053d2b9240ba14a9))
+
 # [1.3.0](https://github.com/evolv-ai/serverless-offline-edge-lambda/compare/1.2.3...1.3.0) (2023-08-31)
 
 

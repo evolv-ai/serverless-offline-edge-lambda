@@ -107,3 +107,25 @@ custom:
     interval: 500,
     debounce: 750
 ```
+
+### Options
+
+#### `--headersFile`
+
+Default: _undefined_
+
+CloudFront [injects some headers](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/using-cloudfront-headers.html) into the request. You can set these by creating a JSON file and passing its path as an option.
+
+Example:
+
+```json
+// .cf-headers.json
+{
+    "CloudFront-Viewer-Country": "us",
+    "CloudFront-Viewer-Country-Region": "tx"
+}
+```
+
+```bash
+npx serverless offline start --headersFile .cf-headers.json
+```

@@ -35,6 +35,7 @@ export class BehaviorRouter {
 
 	private cacheDir: string;
 	private fileDir: string;
+	private injectedHeadersFile?: string;
 	private path: string;
 
 	private started: boolean = false;
@@ -56,6 +57,7 @@ export class BehaviorRouter {
 		this.cfResources = serverless.service?.resources?.Resources || {};
 		this.cacheDir = path.resolve(options.cacheDir || path.join(os.tmpdir(), 'edge-lambda'));
 		this.fileDir = path.resolve(options.fileDir || path.join(os.tmpdir(), 'edge-lambda'));
+		this.injectedHeadersFile = options.headersFile ? path.resolve(options.headersFile) : undefined;
 		this.path = this.serverless.service.custom.offlineEdgeLambda.path || '';
 
 		fs.mkdirpSync(this.cacheDir);
@@ -176,11 +178,15 @@ export class BehaviorRouter {
 					getOriginFromCfDistribution(handler.pattern, this.cfResources[handler.distribution]) :
 					null;
 
-				const cfEvent = convertToCloudFrontEvent(req, this.builder('viewer-request'));
+				const cfEvent = convertToCloudFrontEvent(req, this.builder('viewer-request'), this.injectedHeadersFile);
 
 				try {
+					const context = {
+						...this.context,
+						functionName: handler.name,
+					};
 					const lifecycle = new CloudFrontLifecycle(this.serverless, this.options, cfEvent,
-																this.context, this.cacheService, handler, customOrigin);
+																context, this.cacheService, handler, customOrigin);
 					const response = await lifecycle.run(req.url as string);
 
 					if (!response) {
@@ -268,7 +274,7 @@ export class BehaviorRouter {
 
 			if (!behaviors.has(pattern)) {
 				const origin = this.origins.get(pattern);
-				behaviors.set(pattern, new FunctionSet(pattern, distribution, this.log, origin));
+				behaviors.set(pattern, new FunctionSet(pattern, distribution, this.log, origin, def.name));
 			}
 
 			const fnSet = behaviors.get(pattern) as FunctionSet;
